@@ -332,6 +332,39 @@ class MySQLDriver(RasterDriver):
             out[row['key_name']] = row['description']
 
         return out
+    
+    @requires_connection
+    @convert_exceptions('Could not retrieve valid key values')
+    def get_valid_values(self, where: Mapping[str, Union[str, List[str]]]) -> Dict[str, List[str]]:
+        cursor = self._cursor
+
+        if where:
+            where = {
+                key: value if isinstance(value, list) else [value]
+                for key, value in where.items()
+            }
+            conditions = [
+                '(%s)' % ' OR '.join([f'{key}=%s'] * len(value))
+                for key, value in where.items()
+            ]
+            values = list(itertools.chain(*where.values()))
+            where_fragment = ' WHERE ' + ' AND '.join(conditions)
+        else:
+            where_fragment = ''
+            values = []
+
+        valid_values = where if where is not None else {}
+
+        cursor.execute('SELECT key_name FROM key_names')
+        all_keys = set([row['key_name'] for row in cursor.fetchall()])
+        for key in all_keys - set(where.keys() if where else []):
+            cursor.execute(
+                f'SELECT DISTINCT {key} FROM datasets {where_fragment}',
+                values
+            )
+            valid_values[key] = list([row[key] for row in cursor.fetchall()])
+        
+        return valid_values
 
     @trace('get_datasets')
     @requires_connection

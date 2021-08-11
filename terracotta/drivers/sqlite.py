@@ -231,6 +231,39 @@ class SQLiteDriver(RasterDriver):
             out[row['key']] = row['description']
         return out
 
+    @requires_connection
+    @convert_exceptions('Could not retrieve valid key values')
+    def get_valid_values(self, where: Mapping[str, Union[str, List[str]]]) -> Dict[str, List[str]]:
+        conn = self._connection
+
+        if where:
+            where = {
+                key: value if isinstance(value, list) else [value]
+                for key, value in where.items()
+            }
+            conditions = [
+                '(%s)' % ' OR '.join([f'{key}=?'] * len(value))
+                for key, value in where.items()
+            ]
+            values = list(itertools.chain(*where.values()))
+            where_fragment = ' WHERE ' + ' AND '.join(conditions)
+        else:
+            where_fragment = ''
+            values = []
+
+        valid_values = where if where is not None else {}
+
+        rows = conn.execute('SELECT key FROM keys')
+        all_keys = set([row['key'] for row in rows])
+        for key in all_keys - set(where.keys() if where else []):
+            rows = conn.execute(
+                f'SELECT DISTINCT {key} FROM datasets {where_fragment}',
+                values
+            )
+            valid_values[key] = list([row[key] for row in rows])
+        
+        return valid_values
+
     @trace('get_datasets')
     @requires_connection
     @convert_exceptions('Could not retrieve datasets')
