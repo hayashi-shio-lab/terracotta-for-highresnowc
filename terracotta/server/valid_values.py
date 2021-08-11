@@ -5,7 +5,7 @@ Flask route to handle /datasets calls.
 
 from typing import Any, Dict, List, Union
 from flask import request, jsonify, Response
-from marshmallow import Schema, fields, validate, INCLUDE, post_load
+from marshmallow import Schema, fields, INCLUDE, post_load
 import re
 
 from terracotta.server.flask_api import METADATA_API

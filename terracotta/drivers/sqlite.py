@@ -261,7 +261,7 @@ class SQLiteDriver(RasterDriver):
                 values
             )
             valid_values[key] = list([row[key] for row in rows])
-        
+
         return valid_values
 
     @trace('get_datasets')

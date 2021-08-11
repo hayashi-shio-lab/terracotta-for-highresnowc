@@ -332,7 +332,7 @@ class MySQLDriver(RasterDriver):
             out[row['key_name']] = row['description']
 
         return out
-    
+
     @requires_connection
     @convert_exceptions('Could not retrieve valid key values')
     def get_valid_values(self, where: Mapping[str, Union[str, List[str]]]) -> Dict[str, List[str]]:
@@ -363,7 +363,7 @@ class MySQLDriver(RasterDriver):
                 values
             )
             valid_values[key] = list([row[key] for row in cursor.fetchall()])
-        
+
         return valid_values
 
     @trace('get_datasets')
