@@ -313,6 +313,11 @@ class MySQLDriver(RasterDriver):
         # invalidate key cache
         self._db_keys = None
 
+    def grant_privileges(self, user) -> None:
+        with self._connect(check=False):
+            cursor = self._cursor
+            cursor.execute(f'GRANT ALL ON {self._db_args.db}.* TO {user}')
+
     def get_keys(self) -> OrderedDict:
         if self._db_keys is None:
             self._db_keys = self._get_keys()
