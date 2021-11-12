@@ -36,14 +36,27 @@ def highresnowc(keys: Union[Sequence[str], Mapping[str, str]],
         tile_size = settings.DEFAULT_TILE_SIZE
 
     driver = get_driver(settings.DRIVER_PATH, provider=settings.DRIVER_PROVIDER)
-
+    tile_x, tile_y, tile_z = tile_xyz
+    tile_width, tile_height = tile_size
+    tile_data = np.zeros((tile_width, tile_height))
     with driver.connect():
-        metadata = driver.get_metadata(keys)
-        tile_data = xyz.get_tile_data(
-            driver, keys, tile_xyz,
-            tile_size=tile_size, preserve_values=preserve_values
-        )
-
+        for i in [0, 1]:
+            keys[3] = str(i)
+            for j in [0, 1]:
+                keys[4] = str(j)
+                for res in [160, 40]:
+                    keys[1] = str(res)
+                    metadata = driver.get_metadata(keys)
+                    wgs_bounds = metadata['bounds']
+                    if not xyz.tile_exists(wgs_bounds, tile_x, tile_y, tile_z):
+                        continue
+                    tdata = xyz.get_tile_data(
+                        driver, keys, tile_xyz,
+                        tile_size=tile_size, preserve_values=preserve_values
+                    )
+                    if res == 40:
+                        tdata.repeat(2, axis=0).repeat(2, axis=1)
+                    tile_data = np.maximum(tile_data, tdata)
     '''
         uint8  :    uint16   (precipitation      mm/h)
             0 :   0 -     0 (0.01 mm/h 未満         )
