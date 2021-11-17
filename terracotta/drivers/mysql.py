@@ -244,7 +244,7 @@ class MySQLDriver(RasterDriver):
                 self._connection.close()
 
     @convert_exceptions('Could not create database')
-    def create(self, keys: Sequence[str], key_descriptions: Mapping[str, str] = None) -> None:
+    def create(self, keys: Sequence[str], drop_database, key_descriptions: Mapping[str, str] = None) -> None:
         """Create and initialize database with empty tables.
 
         This must be called before opening the first connection. The MySQL database must not
@@ -288,6 +288,8 @@ class MySQLDriver(RasterDriver):
         )
 
         with connection, connection.cursor() as cursor:  # type: ignore
+            if drop_database:
+                cursor.execute(f'DROP DATABASE IF EXISTS {self._db_args.db}')
             cursor.execute(f'CREATE DATABASE {self._db_args.db}')
 
         with self._connect(check=False):
