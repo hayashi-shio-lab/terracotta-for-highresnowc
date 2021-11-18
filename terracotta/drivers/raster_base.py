@@ -500,15 +500,16 @@ class RasterDriver(Driver):
 
             # pad tile bounds to prevent interpolation artefacts
             num_pad_pixels = 2
-            if reproject_enum == cls._get_resampling_enum('nearest'):
-                num_pad_pixels = 0
+            # additional pad to ensure getting pixel values by vrt.read()
+            additional_pad_for_transform = 0.001
 
             # compute tile VRT shape and transform
             dst_width = max(1, round((tile_bounds[2] - tile_bounds[0]) / dst_res[0]))
             dst_height = max(1, round((tile_bounds[3] - tile_bounds[1]) / dst_res[1]))
             vrt_transform = (
                 transform.from_bounds(*tile_bounds, width=dst_width, height=dst_height)
-                * Affine.translation(-num_pad_pixels, -num_pad_pixels)
+                * Affine.translation(-num_pad_pixels - additional_pad_for_transform,
+                                     -num_pad_pixels - additional_pad_for_transform)
             )
             vrt_height, vrt_width = dst_height + 2 * num_pad_pixels, dst_width + 2 * num_pad_pixels
 
