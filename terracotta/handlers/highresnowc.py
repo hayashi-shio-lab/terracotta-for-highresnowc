@@ -11,6 +11,7 @@ import math
 import numpy as np
 from PIL import Image
 from io import BytesIO
+from operator import and_
 
 from terracotta import get_settings, get_driver, image, xyz
 from terracotta.profile import trace
@@ -38,24 +39,17 @@ def highresnowc(keys: Union[Sequence[str], Mapping[str, str]],
     driver = get_driver(settings.DRIVER_PATH, provider=settings.DRIVER_PROVIDER)
     tile_x, tile_y, tile_z = tile_xyz
     tile_width, tile_height = tile_size
-    tile_data = np.zeros((tile_width, tile_height))
+    tile_data = np.ma.array(np.zeros(tile_size), mask=True)
     section_x_idx = driver.key_names.index('section_x')
     section_y_idx = driver.key_names.index('section_y')
-    resolution_idx = driver.key_names.index('resolution')
     sections_x = keys[section_x_idx].split(',')
     sections_y = keys[section_y_idx].split(',')
-    resolutions = [int(r) for r in keys[resolution_idx].split(',')]
-    max_resolution = max(resolutions)
     with driver.connect():
         for x in sections_x:
             keys[section_x_idx] = x
             for y in sections_y:
                 keys[section_y_idx] = y
-                for res in resolutions:
-                    if res != max_resolution and max_resolution % res != 0:
-                        # Unsupported if max_resolution can not be divided by res.
-                        continue
-                    keys[resolution_idx] = str(res)
+                try:
                     metadata = driver.get_metadata(keys)
                     wgs_bounds = metadata['bounds']
                     if not xyz.tile_exists(wgs_bounds, tile_x, tile_y, tile_z):
@@ -64,10 +58,11 @@ def highresnowc(keys: Union[Sequence[str], Mapping[str, str]],
                         driver, keys, tile_xyz,
                         tile_size=tile_size, preserve_values=preserve_values
                     )
-                    if res != max_resolution:
-                        scale = max_resolution / res
-                        tdata.repeat(scale, axis=0).repeat(scale, axis=1)
-                    tile_data = np.maximum(tile_data, tdata)
+                    tile_data = np.ma.array(tile_data.data + tdata.data, 
+                                            mask=map(and_,tile_data.mask, tdata.mask))
+                except:
+                    continue
+
     '''
         uint8  :    uint16   (precipitation      mm/h)
             0 :   0 -     0 (0.01 mm/h 未満         )
