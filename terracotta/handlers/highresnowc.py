@@ -15,6 +15,7 @@ from operator import and_
 
 from terracotta import get_settings, get_driver, image, xyz
 from terracotta.profile import trace
+from terracotta import exceptions
 
 Number = TypeVar('Number', int, float)
 RGBA = Tuple[Number, Number, Number, Number]
@@ -38,12 +39,12 @@ def highresnowc(keys: Union[Sequence[str], Mapping[str, str]],
 
     driver = get_driver(settings.DRIVER_PATH, provider=settings.DRIVER_PROVIDER)
     tile_x, tile_y, tile_z = tile_xyz
-    tile_width, tile_height = tile_size
     tile_data = np.ma.array(np.zeros(tile_size), mask=True)
     section_x_idx = driver.key_names.index('section_x')
     section_y_idx = driver.key_names.index('section_y')
     sections_x = keys[section_x_idx].split(',')
     sections_y = keys[section_y_idx].split(',')
+    is_xyz_outside = True
     with driver.connect():
         for x in sections_x:
             keys[section_x_idx] = x
@@ -60,23 +61,29 @@ def highresnowc(keys: Union[Sequence[str], Mapping[str, str]],
                     )
                     tile_data = np.ma.array(tile_data.data + tdata.data, 
                                             mask=map(and_,tile_data.mask, tdata.mask))
+                    is_xyz_outside = False
                 except:
                     continue
-
+    if is_xyz_outside:
+        raise exceptions.TileOutOfBoundsError(
+            f'Tile {tile_z}/{tile_x}/{tile_y} is outside image bounds'
+        )
     '''
-        uint8  :    uint16   (precipitation      mm/h)
-            0 :   0 -     0 (0.01 mm/h 未満         )
-        1 -   9 :   1 -     9 (0.01 mm/h -   0.09 mm/h) Unit = 0.01mm/h (*  1)
-    10 -  59 :  10 -   500 (0.10 mm/h -   4.99 mm/h) unit =  0.1mm/h (* 10)
-    60 - 253 : 600 - 19900 (5.00 mm/h - 199.00 mm/h) unit =    1mm/h (*100)
+      uint8 　　 :    uint16  　　 (precipitation      mm/h)
+           1未満 :     0 -     1未満 (              0.01 mm/h未満)
+     1 -  10未満 :     1 -    10未満 (0.01 mm/h -   0.10 mm/h未満) Unit = 0.01mm/h
+    10 -  59未満 :    10 -   500未満 (0.10 mm/h -   5.00 mm/h未満) unit =  0.1mm/h
+    59 - 254未満 :   500 - 20000未満 (5.00 mm/h - 200.00 mm/h未満) unit =    1mm/h
+   254      　　 : 20000 - 65535未満 ( 200 mm/h - 655.35 mm/h未満)
+   255(uint8.max): 65535(uint16.max) (655.35mm/h)
     '''
     nodata_value = np.iinfo(np.uint16).max
-    out = np.where(tile_data == nodata_value, 0, tile_data)
-    #out = np.where((   0 <= out) & (out <       1), 0, out)
-    #out = np.where((   1 <= out) & (out <      10), out * 1, out)
-    out = np.where((   10 <= out) & (out <     500), np.floor((out -  10) *  0.1) + 10, out)
-    out = np.where((  500 <= out) & (out <=  19900), np.floor((out - 500) * 0.01) + 59, out)
-    out = np.where(19901 <= out, 253, out)
+    out = np.where(tile_data == nodata_value, 255, tile_data)
+    #out = np.where((   0 <= out) & (out <     1), 0, out)
+    #out = np.where((   1 <= out) & (out <    10), out * 1, out)
+    out = np.where((   10 <= out) & (out <   500), np.floor((out -  10) *  0.1) + 10, out)
+    out = np.where((  500 <= out) & (out < 20000), np.floor((out - 500) * 0.01) + 59, out)
+    out = np.where( 20000 <= out, 254, out)
     out = out.astype(np.uint8)
 
     settings = get_settings()
