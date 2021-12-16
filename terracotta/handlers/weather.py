@@ -1,6 +1,6 @@
-"""handlers/highresnowc.py
+"""handlers/weather.py
 
-Handle /highresnowc API endpoint.
+Handle /weather API endpoint.
 """
 
 from typing import Sequence, Mapping, Union, Tuple, Optional, TypeVar, cast
@@ -21,22 +21,21 @@ Number = TypeVar('Number', int, float)
 RGBA = Tuple[Number, Number, Number, Number]
 
 
-@trace('highresnowc_handler')
-def highresnowc(keys: Union[Sequence[str], Mapping[str, str]],
-               tile_xyz: Tuple[int, int, int] = None, *,
-               colormap: Union[str, Mapping[Number, RGBA], None] = None,
-               stretch_range: Tuple[Number, Number] = None,
-               tile_size: Tuple[int, int] = None) -> BinaryIO:
-    """Return highresnowc image as PNG"""
+def get_png_stream(uint8_value):
+    img = Image.fromarray(uint8_value, mode='L')
+    sio = BytesIO()
+    settings = get_settings()
+    img.save(sio, 'png', compress_level=settings.PNG_COMPRESS_LEVEL)
+    sio.seek(0)
+    return sio
 
-    cmap_or_palette: Union[str, Sequence[RGBA], None]
 
-    preserve_values = isinstance(colormap, collections.Mapping)
-
+def get_tile_data_from_multi_cogs(keys: Union[Sequence[str], Mapping[str, str]],
+                                  tile_xyz: Tuple[int, int, int] = None,
+                                  tile_size: Tuple[int, int] = None):
     settings = get_settings()
     if tile_size is None:
         tile_size = settings.DEFAULT_TILE_SIZE
-
     driver = get_driver(settings.DRIVER_PATH, provider=settings.DRIVER_PROVIDER)
     tile_x, tile_y, tile_z = tile_xyz
     tile_data = np.ma.array(np.zeros(tile_size), mask=True)
@@ -57,7 +56,7 @@ def highresnowc(keys: Union[Sequence[str], Mapping[str, str]],
                         continue
                     tdata = xyz.get_tile_data(
                         driver, keys, tile_xyz,
-                        tile_size=tile_size, preserve_values=preserve_values
+                        tile_size=tile_size
                     )
                     tile_data = np.ma.array(tile_data.data + tdata.data, 
                                             mask=map(and_,tile_data.mask, tdata.mask))
@@ -68,13 +67,24 @@ def highresnowc(keys: Union[Sequence[str], Mapping[str, str]],
         raise exceptions.TileOutOfBoundsError(
             f'Tile {tile_z}/{tile_x}/{tile_y} is outside image bounds'
         )
+    return tile_data
+
+
+@trace('pri60lv_handler')
+def pri60lv(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return pri60lv image as PNG"""
+
+    tile_data = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+
     '''
-      uint8 　　 :    uint16  　　 (precipitation      mm/h)
+      PNG(uint8) :    COG(uint16)   (precipitation      mm/h)
            1未満 :     0 -     1未満 (              0.01 mm/h未満)
      1 -  10未満 :     1 -    10未満 (0.01 mm/h -   0.10 mm/h未満) Unit = 0.01mm/h
     10 -  59未満 :    10 -   500未満 (0.10 mm/h -   5.00 mm/h未満) unit =  0.1mm/h
     59 - 254未満 :   500 - 20000未満 (5.00 mm/h - 200.00 mm/h未満) unit =    1mm/h
-   254      　　 : 20000 - 65535未満 ( 200 mm/h - 655.35 mm/h未満)
+   254           : 20000 - 65535未満 ( 200 mm/h - 655.35 mm/h未満)
    255(uint8.max): 65535(uint16.max) (655.35mm/h)
     '''
     nodata_value = np.iinfo(np.uint16).max
@@ -86,12 +96,34 @@ def highresnowc(keys: Union[Sequence[str], Mapping[str, str]],
     out = np.where( 20000 <= out, 254, out)
     out = out.astype(np.uint8)
 
-    settings = get_settings()
-    compress_level = settings.PNG_COMPRESS_LEVEL
-    mode = 'L'
-    img = Image.fromarray(out, mode=mode)
+    return get_png_stream(out)
 
-    sio = BytesIO()
-    img.save(sio, 'png', compress_level=compress_level)
-    sio.seek(0)
-    return sio
+
+@trace('pphw10_handler')
+def pphw10(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None, *,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return pphw10 image as PNG"""
+
+    tile_data = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+
+    nodata_value = np.iinfo(np.uint8).max
+    out = np.where(tile_data == nodata_value, 255, tile_data)
+    out = out.astype(np.uint8)
+
+    return get_png_stream(out)
+
+
+@trace('plts10_handler')
+def plts10(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None, *,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return plts10 image as PNG"""
+
+    tile_data = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+
+    nodata_value = np.iinfo(np.uint8).max
+    out = np.where(tile_data == nodata_value, 255, tile_data)
+    out = out.astype(np.uint8)
+
+    return get_png_stream(out)
