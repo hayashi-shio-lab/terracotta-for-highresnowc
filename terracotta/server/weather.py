@@ -98,15 +98,9 @@ def _get_weather_image(keys: str, tile_xyz: Tuple[int, int, int] = None) -> Resp
     options = option_schema.load(request.args)
 
     data_kind = parsed_keys[0]
-    data_handler = None
-    if data_kind == 'Pri60lv':
-        data_handler = handlers.pri60lv
-    elif data_kind == 'Pphw10':
-        data_handler = handlers.pphw10
-    elif data_kind == 'Plts10':
-        data_handler = handlers.plts10
-    
-    if data_handler is not None: 
-        image = data_handler(parsed_keys, tile_xyz=tile_xyz, **options)
-
-    return send_file(image, mimetype='image/png')
+    try:
+        handler = eval(f'handlers.{data_kind}')
+        image = handler(parsed_keys, tile_xyz=tile_xyz, **options)
+        return send_file(image, mimetype='image/png')
+    except:
+        return ('', 204)

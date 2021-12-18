@@ -71,7 +71,7 @@ def get_tile_data_from_multi_cogs(keys: Union[Sequence[str], Mapping[str, str]],
 
 
 @trace('pri60lv_handler')
-def pri60lv(keys: Union[Sequence[str], Mapping[str, str]],
+def Pri60lv(keys: Union[Sequence[str], Mapping[str, str]],
             tile_xyz: Tuple[int, int, int] = None,
             tile_size: Tuple[int, int] = None) -> BinaryIO:
     """Return pri60lv image as PNG"""
@@ -100,7 +100,7 @@ def pri60lv(keys: Union[Sequence[str], Mapping[str, str]],
 
 
 @trace('pphw10_handler')
-def pphw10(keys: Union[Sequence[str], Mapping[str, str]],
+def Pphw10(keys: Union[Sequence[str], Mapping[str, str]],
             tile_xyz: Tuple[int, int, int] = None, *,
             tile_size: Tuple[int, int] = None) -> BinaryIO:
     """Return pphw10 image as PNG"""
@@ -115,7 +115,7 @@ def pphw10(keys: Union[Sequence[str], Mapping[str, str]],
 
 
 @trace('plts10_handler')
-def plts10(keys: Union[Sequence[str], Mapping[str, str]],
+def Plts10(keys: Union[Sequence[str], Mapping[str, str]],
             tile_xyz: Tuple[int, int, int] = None, *,
             tile_size: Tuple[int, int] = None) -> BinaryIO:
     """Return plts10 image as PNG"""
