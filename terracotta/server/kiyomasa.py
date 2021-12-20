@@ -1,6 +1,6 @@
-"""server/weather.py
+"""server/kiyomasa.py
 
-Flask route to handle /weather calls.
+Flask route to handle /kiyomasa calls.
 """
 
 from typing import Any, Mapping, Dict, Tuple
@@ -13,17 +13,17 @@ from flask import request, send_file, Response
 from terracotta.server.flask_api import TILE_API
 from terracotta.cmaps import AVAILABLE_CMAPS
 
-import terracotta.handlers.weather as handlers
+import terracotta.handlers.kiyomasa as handlers
 
 
-class WeatherQuerySchema(Schema):
+class KiyomasaQuerySchema(Schema):
     keys = fields.String(required=True, description='Keys identifying dataset, in order')
     tile_z = fields.Int(required=True, description='Requested zoom level')
     tile_y = fields.Int(required=True, description='y coordinate')
     tile_x = fields.Int(required=True, description='x coordinate')
 
 
-class WeatherOptionSchema(Schema):
+class KiyomasaOptionSchema(Schema):
     class Meta:
         unknown = EXCLUDE
 
@@ -33,19 +33,19 @@ class WeatherOptionSchema(Schema):
     )
 
 
-@TILE_API.route('/weather/<path:keys>/<int:tile_z>/<int:tile_x>/<int:tile_y>.png',
+@TILE_API.route('/kiyomasa/<path:keys>/<int:tile_z>/<int:tile_x>/<int:tile_y>.png',
                 methods=['GET'])
-def get_weather(tile_z: int, tile_y: int, tile_x: int, keys: str) -> Response:
-    """Return weather PNG image of requested tile
+def get_kiyomasa(tile_z: int, tile_y: int, tile_x: int, keys: str) -> Response:
+    """Return kiyomasa PNG image of requested tile
     ---
     get:
-        summary: /weather (tile)
+        summary: /kiyomasa (tile)
         description: Return single-band PNG image of requested XYZ tile
         parameters:
             - in: path
-              schema: WeatherQuerySchema
+              schema: KiyomasaQuerySchema
             - in: query
-              schema: WeatherOptionSchema
+              schema: KiyomasaOptionSchema
         responses:
             200:
                 description:
@@ -58,25 +58,25 @@ def get_weather(tile_z: int, tile_y: int, tile_x: int, keys: str) -> Response:
                     No dataset found for given key combination
     """
     tile_xyz = (tile_x, tile_y, tile_z)
-    return _get_weather_image(keys, tile_xyz)
+    return _get_kiyomasa_image(keys, tile_xyz)
 
 
-class WeatherPreviewSchema(Schema):
+class KiyomasaPreviewSchema(Schema):
     keys = fields.String(required=True, description='Keys identifying dataset, in order')
 
 
-@TILE_API.route('/weather/<path:keys>/preview.png', methods=['GET'])
-def get_weather_preview(keys: str) -> Response:
-    """Return weather PNG preview image of requested dataset
+@TILE_API.route('/kiyomasa/<path:keys>/preview.png', methods=['GET'])
+def get_kiyomasa_preview(keys: str) -> Response:
+    """Return kiyomasa PNG preview image of requested dataset
     ---
     get:
-        summary: /weather (preview)
+        summary: /kiyomasa (preview)
         description: Return single-band PNG preview image of requested dataset
         parameters:
             - in: path
-              schema: WeatherPreviewSchema
+              schema: KiyomasaPreviewSchema
             - in: query
-              schema: WeatherOptionSchema
+              schema: KiyomasaOptionSchema
         responses:
             200:
                 description:
@@ -88,13 +88,13 @@ def get_weather_preview(keys: str) -> Response:
                 description:
                     No dataset found for given key combination
     """
-    return _get_weather_image(keys)
+    return _get_kiyomasa_image(keys)
 
 
-def _get_weather_image(keys: str, tile_xyz: Tuple[int, int, int] = None) -> Response:
+def _get_kiyomasa_image(keys: str, tile_xyz: Tuple[int, int, int] = None) -> Response:
     parsed_keys = [key for key in keys.split('/') if key]
 
-    option_schema = WeatherOptionSchema()
+    option_schema = KiyomasaOptionSchema()
     options = option_schema.load(request.args)
 
     data_kind = parsed_keys[0]

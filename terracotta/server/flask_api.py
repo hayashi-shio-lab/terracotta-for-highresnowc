@@ -88,7 +88,7 @@ def create_app(debug: bool = False, profile: bool = False) -> Flask:
     import terracotta.server.metadata
     import terracotta.server.rgb
     import terracotta.server.singleband
-    import terracotta.server.weather
+    import terracotta.server.kiyomasa
     import terracotta.server.compute
 
     new_app = Flask('terracotta.server')
@@ -119,8 +119,8 @@ def create_app(debug: bool = False, profile: bool = False) -> Flask:
         SPEC.path(view=terracotta.server.rgb.get_rgb_preview)
         SPEC.path(view=terracotta.server.singleband.get_singleband)
         SPEC.path(view=terracotta.server.singleband.get_singleband_preview)
-        SPEC.path(view=terracotta.server.weather.get_weather)
-        SPEC.path(view=terracotta.server.weather.get_weather_preview)
+        SPEC.path(view=terracotta.server.kiyomasa.get_kiyomasa)
+        SPEC.path(view=terracotta.server.kiyomasa.get_kiyomasa_preview)
         SPEC.path(view=terracotta.server.compute.get_compute)
         SPEC.path(view=terracotta.server.compute.get_compute_preview)
 

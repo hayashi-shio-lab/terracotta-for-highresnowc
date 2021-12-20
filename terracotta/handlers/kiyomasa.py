@@ -1,6 +1,6 @@
-"""handlers/weather.py
+"""handlers/kiyomasa.py
 
-Handle /weather API endpoint.
+Handle /kiyomasa API endpoint.
 """
 
 from typing import Sequence, Mapping, Union, Tuple, Optional, TypeVar, cast
