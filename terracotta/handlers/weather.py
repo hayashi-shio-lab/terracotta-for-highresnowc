@@ -54,12 +54,12 @@ def get_tile_data_from_multi_cogs(keys: Union[Sequence[str], Mapping[str, str]],
                     wgs_bounds = metadata['bounds']
                     if not xyz.tile_exists(wgs_bounds, tile_x, tile_y, tile_z):
                         continue
-                    tdata = xyz.get_tile_data(
-                        driver, keys, tile_xyz,
-                        tile_size=tile_size
+                    partial_data = xyz.get_tile_data(
+                                    driver, keys, tile_xyz,
+                                    tile_size=tile_size
                     )
-                    tile_data = np.ma.array(tile_data.data + tdata.data, 
-                                            mask=map(and_,tile_data.mask, tdata.mask))
+                    tile_data.data[~partial_data.mask] = partial_data.data[~partial_data.mask]
+                    tile_data.mask[~partial_data.mask] = partial_data.mask[~partial_data.mask]
                     is_xyz_outside = False
                 except:
                     continue
@@ -76,7 +76,7 @@ def Pri60lv(keys: Union[Sequence[str], Mapping[str, str]],
             tile_size: Tuple[int, int] = None) -> BinaryIO:
     """Return pri60lv image as PNG"""
 
-    tile_data = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+    tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
 
     '''
       PNG(uint8) :    COG(uint16)   (precipitation      mm/h)
@@ -85,15 +85,15 @@ def Pri60lv(keys: Union[Sequence[str], Mapping[str, str]],
     10 -  59未満 :    10 -   500未満 (0.10 mm/h -   5.00 mm/h未満) unit =  0.1mm/h
     59 - 254未満 :   500 - 20000未満 (5.00 mm/h - 200.00 mm/h未満) unit =    1mm/h
    254           : 20000 - 65535未満 ( 200 mm/h - 655.35 mm/h未満)
-   255(uint8.max): 65535(uint16.max) (655.35mm/h)
+   255(uint8.max): 65535(uint16.max) (outside the data area)
     '''
-    nodata_value = np.iinfo(np.uint16).max
-    out = np.where(tile_data == nodata_value, 255, tile_data)
-    #out = np.where((   0 <= out) & (out <     1), 0, out)
-    #out = np.where((   1 <= out) & (out <    10), out * 1, out)
-    out = np.where((   10 <= out) & (out <   500), np.floor((out -  10) *  0.1) + 10, out)
-    out = np.where((  500 <= out) & (out < 20000), np.floor((out - 500) * 0.01) + 59, out)
-    out = np.where( 20000 <= out, 254, out)
+    #out = np.where((   0 <= tile) & (tile <     1), 0                                 , tile)
+    #out = np.where((   1 <=  out) & ( out <    10), out * 1                           ,  out)
+    out = np.where((   10 <= tile) & (tile <   500), np.floor((tile -  10) *  0.1) + 10, tile)
+    out = np.where((  500 <=  out) & ( out < 20000), np.floor(( out - 500) * 0.01) + 59,  out)
+    out = np.where( 20000 <=  out                  , 254                               ,  out)
+    #nodata_value = np.iinfo(np.uint8).max
+    #out[tile.mask] = nodata_value
     out = out.astype(np.uint8)
 
     return get_png_stream(out)
@@ -105,11 +105,11 @@ def Pphw10(keys: Union[Sequence[str], Mapping[str, str]],
             tile_size: Tuple[int, int] = None) -> BinaryIO:
     """Return pphw10 image as PNG"""
 
-    tile_data = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+    tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
 
-    nodata_value = np.iinfo(np.uint8).max
-    out = np.where(tile_data == nodata_value, 255, tile_data)
-    out = out.astype(np.uint8)
+    #nodata_value = np.iinfo(np.uint8).max
+    #tile[tile.mask] = nodata_value
+    out = tile.astype(np.uint8)
 
     return get_png_stream(out)
 
@@ -120,10 +120,10 @@ def Plts10(keys: Union[Sequence[str], Mapping[str, str]],
             tile_size: Tuple[int, int] = None) -> BinaryIO:
     """Return plts10 image as PNG"""
 
-    tile_data = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+    tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
 
-    nodata_value = np.iinfo(np.uint8).max
-    out = np.where(tile_data == nodata_value, 255, tile_data)
-    out = out.astype(np.uint8)
+    #nodata_value = np.iinfo(np.uint8).max
+    #tile[tile.mask] = nodata_value
+    out = tile.astype(np.uint8)
 
     return get_png_stream(out)
