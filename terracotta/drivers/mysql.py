@@ -20,6 +20,7 @@ from pymysql.connections import Connection
 from pymysql.cursors import DictCursor
 
 from terracotta import get_settings, __version__
+from terracotta.drivers import DONT_CARE_VALUE
 from terracotta.drivers.raster_base import RasterDriver
 from terracotta.drivers.base import requires_connection
 from terracotta import exceptions
@@ -364,7 +365,7 @@ class MySQLDriver(RasterDriver):
             conditions = []
             values = []
             for key, value in where.items():
-                if value is None:
+                if value is DONT_CARE_VALUE:
                     continue
                 if isinstance(value, str):
                     value = [value]
@@ -504,6 +505,6 @@ class MySQLDriver(RasterDriver):
             raise exceptions.DatasetNotFoundError(f'No dataset found with keys {keys}')
 
         where_string = ' AND '.join([f'{key}=%s' for key in self.key_names
-                                    if key is not None])
+                                    if key is not DONT_CARE_VALUE])
         cursor.execute(f'DELETE FROM datasets WHERE {where_string}', keys)
         cursor.execute(f'DELETE FROM metadata WHERE {where_string}', keys)
