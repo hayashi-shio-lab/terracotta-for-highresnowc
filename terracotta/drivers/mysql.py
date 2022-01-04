@@ -364,6 +364,8 @@ class MySQLDriver(RasterDriver):
             conditions = []
             values = []
             for key, value in where.items():
+                if value is None:
+                    continue
                 if isinstance(value, str):
                     value = [value]
                 values.extend(value)
@@ -501,6 +503,7 @@ class MySQLDriver(RasterDriver):
         if not self.get_datasets(key_dict):
             raise exceptions.DatasetNotFoundError(f'No dataset found with keys {keys}')
 
-        where_string = ' AND '.join([f'{key}=%s' for key in self.key_names])
+        where_string = ' AND '.join([f'{key}=%s' for key in self.key_names
+                                    if key is not None])
         cursor.execute(f'DELETE FROM datasets WHERE {where_string}', keys)
         cursor.execute(f'DELETE FROM metadata WHERE {where_string}', keys)
