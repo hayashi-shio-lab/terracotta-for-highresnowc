@@ -499,12 +499,14 @@ class MySQLDriver(RasterDriver):
             )
 
         keys = self._key_dict_to_sequence(keys)
+        assert len(self.key_names)==len(keys)
         key_dict = dict(zip(self.key_names, keys))
 
         if not self.get_datasets(key_dict):
             raise exceptions.DatasetNotFoundError(f'No dataset found with keys {keys}')
 
         where_string = ' AND '.join([f'{key}=%s' for key in self.key_names
-                                    if key is not DONT_CARE_VALUE])
+                                    if key_dict[key] is not DONT_CARE_VALUE])
+        keys = [k for k in keys if k is not DONT_CARE_VALUE]
         cursor.execute(f'DELETE FROM datasets WHERE {where_string}', keys)
         cursor.execute(f'DELETE FROM metadata WHERE {where_string}', keys)
