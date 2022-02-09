@@ -99,7 +99,10 @@ def _get_kiyomasa_image(keys: str, tile_xyz: Tuple[int, int, int] = None) -> Res
 
     data_kind = parsed_keys[0]
     try:
-        handler = eval(f'handlers.{data_kind}')
+        handler = getattr(handlers, data_kind)
+        assert handler in (handlers.Pri60lv,
+                           handlers.Pphw10,
+                           handlers.Plts10)
         image = handler(parsed_keys, tile_xyz=tile_xyz, **options)
         return send_file(image, mimetype='image/png')
     except:
