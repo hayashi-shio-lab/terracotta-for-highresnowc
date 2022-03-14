@@ -136,9 +136,6 @@ def CWM_height(keys: Union[Sequence[str], Mapping[str, str]],
     """Return cwm_height image as PNG"""
 
     tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
-
-    #nodata_value = np.iinfo(np.uint8).max
-    #tile[tile.mask] = nodata_value
     out = tile.astype(np.uint8)
 
     return get_png_stream(out)
@@ -151,9 +148,6 @@ def CWM_direction(keys: Union[Sequence[str], Mapping[str, str]],
     """Return cwm_direction image as PNG"""
 
     tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
-
-    #nodata_value = np.iinfo(np.uint8).max
-    #tile[tile.mask] = nodata_value
-    out = tile.astype(np.uint8)
+    out = tile.astype(np.int8)
 
     return get_png_stream(out)
