@@ -141,6 +141,18 @@ def CWM_height(keys: Union[Sequence[str], Mapping[str, str]],
     return get_png_stream(out)
 
 
+@trace('cwm_period_handler')
+def CWM_period(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None, *,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return cwm_period image as PNG"""
+
+    tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+    out = tile.astype(np.uint8)
+
+    return get_png_stream(out)
+
+
 @trace('cwm_direction_handler')
 def CWM_direction(keys: Union[Sequence[str], Mapping[str, str]],
             tile_xyz: Tuple[int, int, int] = None, *,
