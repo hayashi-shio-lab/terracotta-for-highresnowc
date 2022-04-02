@@ -160,8 +160,7 @@ def CWM_direction(keys: Union[Sequence[str], Mapping[str, str]],
     """Return cwm_direction image as PNG"""
 
     tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
-    tile.set_fill_value(-1)     ''' Replace masked data with nodata value      '''
-    tile = tile.filled()        ''' because out-of-area data must not be ZERO. '''
-    out = tile.astype(np.int8)  ''' ZERO means north direction.                '''
+    tile[tile.mask] = -1        # nodata
+    out = tile.astype(np.int8)  # ZERO means north direction.
 
     return get_png_stream(out)
