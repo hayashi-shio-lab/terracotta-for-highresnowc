@@ -21,8 +21,13 @@ Number = TypeVar('Number', int, float)
 RGBA = Tuple[Number, Number, Number, Number]
 
 
-def get_png_stream(uint8_value):
-    img = Image.fromarray(uint8_value, mode='L')
+def get_png_stream(image):
+    if image.dtype == 'uint8':
+        mode = 'L'
+    elif image.dtype == 'uint16':
+        mode = 'I;16'
+    assert mode is not None, f'{image.dtype} is not supported.'
+    img = Image.fromarray(image, mode=mode)
     sio = BytesIO()
     settings = get_settings()
     img.save(sio, 'png', compress_level=settings.PNG_COMPRESS_LEVEL)
@@ -160,7 +165,33 @@ def CWM_direction(keys: Union[Sequence[str], Mapping[str, str]],
     """Return cwm_direction image as PNG"""
 
     tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
-    tile[tile.mask] = -1        # nodata
-    out = tile.astype(np.int8)  # ZERO means north direction.
+    tile[tile.mask] = np.iinfo(np.uint8).max    # nodata
+    out = tile.astype(np.uint8)     # ZERO means north direction.
+
+    return get_png_stream(out)
+
+
+@trace('msm_temp_handler')
+def MSM_temp(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None, *,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return msm_temp image as PNG"""
+
+    tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+    tile[tile.mask] = np.iinfo(np.uint16).max    # nodata
+    out = tile.astype(np.uint16)
+
+    return get_png_stream(out)
+
+
+@trace('msm_rh_handler')
+def MSM_rh(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None, *,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return msm_rh image as PNG"""
+
+    tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+    tile[tile.mask] = np.iinfo(np.uint16).max    # nodata
+    out = tile.astype(np.uint16)
 
     return get_png_stream(out)
