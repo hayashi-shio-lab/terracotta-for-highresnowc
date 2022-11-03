@@ -97,8 +97,8 @@ def Pri60lv(keys: Union[Sequence[str], Mapping[str, str]],
     out = np.where((   10 <= tile) & (tile <   500), np.floor((tile -  10) *  0.1) + 10, tile)
     out = np.where((  500 <=  out) & ( out < 20000), np.floor(( out - 500) * 0.01) + 59,  out)
     out = np.where( 20000 <=  out                  , 254                               ,  out)
-    #nodata_value = np.iinfo(np.uint8).max
-    #out[tile.mask] = nodata_value
+    nodata_value = np.iinfo(np.uint8).max
+    out[tile.mask] = nodata_value
     out = out.astype(np.uint8)
 
     return get_png_stream(out)
@@ -189,6 +189,32 @@ def MSM_rh(keys: Union[Sequence[str], Mapping[str, str]],
             tile_xyz: Tuple[int, int, int] = None, *,
             tile_size: Tuple[int, int] = None) -> BinaryIO:
     """Return msm_rh image as PNG"""
+
+    tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+    tile[tile.mask] = np.iinfo(np.uint16).max    # nodata
+    out = tile.astype(np.uint16)
+
+    return get_png_stream(out)
+
+
+@trace('hdw_temp_handler')
+def HDW_temp(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None, *,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return hdw_temp image as PNG"""
+
+    tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+    tile[tile.mask] = np.iinfo(np.uint16).max    # nodata
+    out = tile.astype(np.uint16)
+
+    return get_png_stream(out)
+
+
+@trace('hdw_rh_handler')
+def HDW_rh(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None, *,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return hdw_rh image as PNG"""
 
     tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
     tile[tile.mask] = np.iinfo(np.uint16).max    # nodata

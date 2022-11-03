@@ -107,7 +107,9 @@ def _get_kiyomasa_image(keys: str, tile_xyz: Tuple[int, int, int] = None) -> Res
                            handlers.CWM_period,
                            handlers.CWM_direction,
                            handlers.MSM_temp,
-                           handlers.MSM_rh,)
+                           handlers.MSM_rh,
+                           handlers.HDW_temp,
+                           handlers.HDW_rh,)
         image = handler(parsed_keys, tile_xyz=tile_xyz, **options)
         return send_file(image, mimetype='image/png')
     except:
