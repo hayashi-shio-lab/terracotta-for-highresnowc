@@ -25,7 +25,7 @@ def get_png_stream(image):
     if image.dtype == 'uint8':
         mode = 'L'
     elif image.dtype == 'uint16':
-        mode = 'I;16'
+        mode = 'LA'
     assert mode is not None, f'{image.dtype} is not supported.'
     img = Image.fromarray(image, mode=mode)
     sio = BytesIO()
