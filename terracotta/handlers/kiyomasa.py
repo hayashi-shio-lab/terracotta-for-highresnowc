@@ -221,3 +221,42 @@ def HDW_rh(keys: Union[Sequence[str], Mapping[str, str]],
     out = tile.astype(np.uint16)
 
     return get_png_stream(out)
+
+
+@trace('hdw_precip_handler')
+def HDW_precip(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None, *,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return hdw_precip image as PNG"""
+
+    tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+    tile[tile.mask] = np.iinfo(np.uint16).max    # nodata
+    out = tile.astype(np.uint16)
+
+    return get_png_stream(out)
+
+
+@trace('hdw_wind_speed_handler')
+def HDW_wind_speed(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None, *,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return hdw_wind_speed image as PNG"""
+
+    tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+    tile[tile.mask] = np.iinfo(np.uint16).max    # nodata
+    out = tile.astype(np.uint16)
+
+    return get_png_stream(out)
+
+
+@trace('hdw_rh_handler')
+def HDW_wind_dir(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None, *,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return hdw_wind_dir image as PNG"""
+
+    tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+    tile[tile.mask] = np.iinfo(np.uint8).max    # nodata
+    out = tile.astype(np.uint8)
+
+    return get_png_stream(out)
