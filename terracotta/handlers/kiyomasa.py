@@ -249,7 +249,7 @@ def HDW_wind_speed(keys: Union[Sequence[str], Mapping[str, str]],
     return get_png_stream(out)
 
 
-@trace('hdw_rh_handler')
+@trace('hdw_wind_dir_handler')
 def HDW_wind_dir(keys: Union[Sequence[str], Mapping[str, str]],
             tile_xyz: Tuple[int, int, int] = None, *,
             tile_size: Tuple[int, int] = None) -> BinaryIO:
