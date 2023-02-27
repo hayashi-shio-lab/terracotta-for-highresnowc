@@ -35,7 +35,7 @@ class TerracottaSettings(NamedTuple):
     RASTER_CACHE_SIZE: int = 1024 * 1024 * 490  # 490 MB
 
     #: Compression level of raster file in-memory cache, from 0-9
-    RASTER_CACHE_COMPRESS_LEVEL: int = 9
+    RASTER_CACHE_COMPRESS_LEVEL: int = 1
 
     #: Tile size to return if not given in parameters
     DEFAULT_TILE_SIZE: Tuple[int, int] = (256, 256)
