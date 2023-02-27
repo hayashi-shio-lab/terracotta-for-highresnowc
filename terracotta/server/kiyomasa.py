@@ -14,6 +14,7 @@ from terracotta.server.flask_api import TILE_API
 from terracotta.cmaps import AVAILABLE_CMAPS
 
 import terracotta.handlers.kiyomasa as handlers
+from terracotta import exceptions
 
 
 class KiyomasaQuerySchema(Schema):
@@ -98,23 +99,21 @@ def _get_kiyomasa_image(keys: str, tile_xyz: Tuple[int, int, int] = None) -> Res
     options = option_schema.load(request.args)
 
     data_kind = parsed_keys[0]
-    try:
-        handler = getattr(handlers, data_kind)
-        assert handler in (handlers.Pri60lv,
-                           handlers.Pphw10,
-                           handlers.Plts10,
-                           handlers.CWM_height,
-                           handlers.CWM_period,
-                           handlers.CWM_direction,
-                           handlers.MSM_temp,
-                           handlers.MSM_rh,
-                           handlers.HDW_temp,
-                           handlers.HDW_rh,
-                           handlers.HDW_precip,
-                           handlers.HDW_wind_speed,
-                           handlers.HDW_wind_dir,
-                           )
-        image = handler(parsed_keys, tile_xyz=tile_xyz, **options)
-        return send_file(image, mimetype='image/png')
-    except:
-        return ('', 204)
+    if data_kind not in (handlers.Pri60lv,
+                         handlers.Pphw10,
+                         handlers.Plts10,
+                         handlers.CWM_height,
+                         handlers.CWM_period,
+                         handlers.CWM_direction,
+                         handlers.MSM_temp,
+                         handlers.MSM_rh,
+                         handlers.HDW_temp,
+                         handlers.HDW_rh,
+                         handlers.HDW_precip,
+                         handlers.HDW_wind_speed,
+                         handlers.HDW_wind_dir,
+                        ):
+        raise exceptions.InvalidKeyError(f"unknown data kind '{data_kind}'.")
+    handler = getattr(handlers, data_kind)
+    image = handler(parsed_keys, tile_xyz=tile_xyz, **options)
+    return send_file(image, mimetype='image/png')
