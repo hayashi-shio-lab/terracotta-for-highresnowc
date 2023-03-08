@@ -7,11 +7,12 @@ from typing import Sequence, Mapping, Union, Tuple, Optional, TypeVar, cast
 from typing.io import BinaryIO
 
 import collections
+from io import BytesIO
 import math
+from operator import and_
+
 import numpy as np
 from PIL import Image
-from io import BytesIO
-from operator import and_
 
 from terracotta import get_settings, get_driver, image, xyz
 from terracotta.profile import trace
@@ -50,28 +51,36 @@ def get_tile_data_from_multi_cogs(keys: Union[Sequence[str], Mapping[str, str]],
     sections_y = keys[section_y_idx].split(',')
     is_xyz_outside = True
     with driver.connect():
+        futures = {}
         for x in sections_x:
             keys[section_x_idx] = x
             for y in sections_y:
                 keys[section_y_idx] = y
-                try:
-                    metadata = driver.get_metadata(keys)
-                    wgs_bounds = metadata['bounds']
-                    if not xyz.tile_exists(wgs_bounds, tile_x, tile_y, tile_z):
-                        continue
-                    partial_data = xyz.get_tile_data(
-                                    driver, keys, tile_xyz,
-                                    tile_size=tile_size
-                    )
-                    tile_data.data[~partial_data.mask] = partial_data.data[~partial_data.mask]
-                    tile_data.mask[~partial_data.mask] = partial_data.mask[~partial_data.mask]
-                    is_xyz_outside = False
-                except:
+                metadata = driver.get_metadata(keys)
+                wgs_bounds = metadata['bounds']
+                if not xyz.tile_exists(wgs_bounds, tile_x, tile_y, tile_z):
                     continue
-    if is_xyz_outside:
-        raise exceptions.TileOutOfBoundsError(
-            f'Tile {tile_z}/{tile_x}/{tile_y} is outside image bounds'
-        )
+                futures[(x, y)] = xyz.get_tile_data(
+                    driver, keys, tile_xyz, tile_size=tile_size,
+                    asynchronous=True,
+                )
+
+        # print ('futures', futures)
+        num_collected_tiles = 0
+        for x in sections_x:
+            for y in sections_y:
+                f = futures.get((x,y))
+                if f is None:
+                    continue
+                out = f.result()
+                exc = f.exception()
+                if exc != None:
+                   raise exc
+                tile_data.data[~out.mask] = out.data[~out.mask]
+                tile_data.mask[~out.mask] = out.mask[~out.mask]
+                num_collected_tiles += 1
+        if num_collected_tiles == 0:
+            print (f'Tile {tile_z}/{tile_x}/{tile_y} is outside image bounds')
     return tile_data
 
 
