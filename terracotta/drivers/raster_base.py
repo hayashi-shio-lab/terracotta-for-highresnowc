@@ -49,7 +49,8 @@ def create_executor() -> Executor:
 
     try:
         # this fails on architectures without /dev/shm
-        executor = ProcessPoolExecutor(max_workers=3)
+        executor = ProcessPoolExecutor(max_workers=2)
+        print ('Spawned 2 process executors!')
     except OSError:
         # fall back to serial evaluation
         warnings.warn(
