@@ -5,6 +5,7 @@ Handle /kiyomasa API endpoint.
 
 from typing import Sequence, Mapping, Union, Tuple, Optional, TypeVar, cast
 from typing.io import BinaryIO
+import traceback
 
 import collections
 from io import BytesIO
@@ -56,7 +57,10 @@ def get_tile_data_from_multi_cogs(keys: Union[Sequence[str], Mapping[str, str]],
             keys[section_x_idx] = x
             for y in sections_y:
                 keys[section_y_idx] = y
-                metadata = driver.get_metadata(keys)
+                try:
+                    metadata = driver.get_metadata(keys)
+                except exceptions.DatasetNotFoundError:
+                    continue
                 wgs_bounds = metadata['bounds']
                 if not xyz.tile_exists(wgs_bounds, tile_x, tile_y, tile_z):
                     continue
@@ -79,8 +83,8 @@ def get_tile_data_from_multi_cogs(keys: Union[Sequence[str], Mapping[str, str]],
                 tile_data.data[~out.mask] = out.data[~out.mask]
                 tile_data.mask[~out.mask] = out.mask[~out.mask]
                 num_collected_tiles += 1
-        if num_collected_tiles == 0:
-            print (f'Tile {tile_z}/{tile_x}/{tile_y} is outside image bounds')
+        # if num_collected_tiles == 0:
+        #    print (f'Tile {tile_z}/{tile_x}/{tile_y} is outside image bounds')
     return tile_data
 
 
