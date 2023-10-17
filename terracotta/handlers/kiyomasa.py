@@ -184,6 +184,30 @@ def CWM_direction(keys: Union[Sequence[str], Mapping[str, str]],
     return get_png_stream(out)
 
 
+@trace('gwm_height_handler')
+def GWM_height(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None, *,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return gwm_height image as PNG"""
+    return CWM_height(keys, tile_xyz=tile_xyz, tile_size=tile_size)
+
+
+@trace('gwm_period_handler')
+def GWM_period(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None, *,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return gwm_period image as PNG"""
+    return CWM_period(keys, tile_xyz=tile_xyz, tile_size=tile_size)
+
+
+@trace('gwm_direction_handler')
+def GWM_direction(keys: Union[Sequence[str], Mapping[str, str]],
+            tile_xyz: Tuple[int, int, int] = None, *,
+            tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return gwm_direction image as PNG"""
+    return CWM_direction(keys, tile_xyz=tile_xyz, tile_size=tile_size)
+
+
 @trace('msm_temp_handler')
 def MSM_temp(keys: Union[Sequence[str], Mapping[str, str]],
             tile_xyz: Tuple[int, int, int] = None, *,
