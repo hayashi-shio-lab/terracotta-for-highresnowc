@@ -297,3 +297,29 @@ def HDW_wind_dir(keys: Union[Sequence[str], Mapping[str, str]],
     out = tile.astype(np.uint8)
 
     return get_png_stream(out)
+
+
+def int16_to_uint16(keys: Union[Sequence[str], Mapping[str, str]],
+                        tile_xyz: Tuple[int, int, int],
+                        tile_size: Tuple[int, int]) -> BinaryIO:
+    tile = get_tile_data_from_multi_cogs(keys, tile_xyz, tile_size)
+    tile = tile + np.iinfo(np.int16).max
+    tile = np.clip(tile, 0, np.iinfo(np.uint16).max)
+    tile[tile.mask] = np.iinfo(np.uint16).max    # nodata
+    return tile.astype(np.uint16)
+    
+
+@trace('msm_u_component_of_wind_handler')
+def MSM_u_component_of_wind(keys: Union[Sequence[str], Mapping[str, str]],
+                        tile_xyz: Tuple[int, int, int] = None, *,
+                        tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return msm_u_component_of_wind image as PNG"""
+    return get_png_stream(int16_to_uint16(keys, tile_xyz, tile_size))
+
+
+@trace('msm_v_component_of_wind_handler')
+def MSM_v_component_of_wind(keys: Union[Sequence[str], Mapping[str, str]],
+                        tile_xyz: Tuple[int, int, int] = None, *,
+                        tile_size: Tuple[int, int] = None) -> BinaryIO:
+    """Return msm_v_component_of_wind image as PNG"""
+    return get_png_stream(int16_to_uint16(keys, tile_xyz, tile_size))
