@@ -9,6 +9,8 @@ from typing import (List, Tuple, Dict, Iterator, Sequence, Union,
 from collections import OrderedDict
 import contextlib
 from contextlib import AbstractContextManager
+import dataclasses
+import datetime
 import re
 import json
 import urllib.parse as urlparse
@@ -75,6 +77,11 @@ class MySQLCredentials:
 
         return pw
 
+# Value in the dictionary returned from get_datasets().
+@dataclasses.dataclass
+class AuxInfo:
+    filepath: str
+    created_at: datetime.datetime
 
 class MySQLDriver(RasterDriver):
     """A MySQL-backed raster driver.
@@ -377,13 +384,12 @@ class MySQLDriver(RasterDriver):
                 values
             )
 
-        def keytuple(row: Dict[str, Any]) -> Tuple[str, ...]:
+        def make_keytuple(row: Dict[str, Any]) -> Tuple[str, ...]:
             return tuple(row[key] for key in self.key_names)
 
         datasets = {}
         for row in cursor:
-            datasets[keytuple(row)] = row['filepath']
-
+            datasets[make_keytuple(row)] = AuxInfo(row['filepath'], row['created_at'])
         return datasets
 
     @staticmethod
@@ -436,13 +442,13 @@ class MySQLDriver(RasterDriver):
         row = cursor.fetchone()
 
         if not row:  # support lazy loading
-            filepath = self.get_datasets(dict(zip(self.key_names, keys)))
-            if not filepath:
+            dict_aux = self.get_datasets(dict(zip(self.key_names, keys)))
+            if not dict_aux:
                 raise exceptions.DatasetNotFoundError(f'No dataset found for given keys {keys}')
-            assert len(filepath) == 1
+            assert len(dict_aux) == 1
 
             # compute metadata and try again
-            self.insert(keys, filepath[keys], skip_metadata=False)
+            self.insert(keys, dict_aux[keys].filepath, skip_metadata=False)
             cursor.execute(f'SELECT * FROM metadata WHERE {where_string}', keys)
             row = cursor.fetchone()
 
@@ -473,7 +479,8 @@ class MySQLDriver(RasterDriver):
 
         keys = self._key_dict_to_sequence(keys)
         template_string = ', '.join(['%s'] * (len(keys) + 1))
-        cursor.execute(f'REPLACE INTO datasets VALUES ({template_string})',
+        fields = ','.join(self.key_names + ('filepath',))
+        cursor.execute(f'REPLACE INTO datasets ({fields}) VALUES ({template_string})',
                        [*keys, override_path])
 
         if metadata is None and not skip_metadata:

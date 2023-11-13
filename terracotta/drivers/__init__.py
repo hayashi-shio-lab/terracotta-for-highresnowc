@@ -2,7 +2,8 @@
 
 Define an interface to retrieve Terracotta drivers.
 """
-
+import dataclasses
+import datetime
 from typing import Union, Tuple, Dict, Type
 import urllib.parse as urlparse
 from pathlib import Path
@@ -88,3 +89,9 @@ def get_driver(url_or_path: URLOrPathType, provider: str = None) -> Driver:
         _DRIVER_CACHE[cache_key] = DriverClass(url_or_path)
 
     return _DRIVER_CACHE[cache_key]
+
+@dataclasses.dataclass
+class AuxInfo:
+    filepath: str
+    created_at: datetime.datetime
+
