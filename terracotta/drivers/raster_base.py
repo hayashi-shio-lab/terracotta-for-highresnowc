@@ -562,7 +562,7 @@ class RasterDriver(Driver):
         key_tuple = tuple(self._key_dict_to_sequence(keys))
         datasets = self.get_datasets(dict(zip(self.key_names, key_tuple)))
         assert len(datasets) == 1
-        path = datasets[key_tuple]
+        path = datasets[key_tuple].filepath
 
         if tile_size is None:
             tile_size = settings.DEFAULT_TILE_SIZE
