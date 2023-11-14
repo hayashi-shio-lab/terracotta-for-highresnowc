@@ -12,7 +12,14 @@ from terracotta.drivers.base import Driver
 
 URLOrPathType = Union[str, Path]
 
-DONT_CARE_VALUE = object()
+class DONT_CARE:
+    def __str__(self):
+        return 'DONT_CARE'
+    def __repr__(self):
+        return 'DONT_CARE'
+
+DONT_CARE_VALUE = DONT_CARE()
+
 
 def load_driver(provider: str) -> Type[Driver]:
     if provider == 'sqlite-remote':
