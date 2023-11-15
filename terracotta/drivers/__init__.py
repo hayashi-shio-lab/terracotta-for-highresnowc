@@ -20,6 +20,12 @@ class DONT_CARE:
 
 DONT_CARE_VALUE = DONT_CARE()
 
+# Value in the dictionary returned from get_datasets().
+@dataclasses.dataclass
+class AuxInfo:
+    filepath: str
+    created_at: datetime.datetime
+
 
 def load_driver(provider: str) -> Type[Driver]:
     if provider == 'sqlite-remote':
@@ -96,9 +102,4 @@ def get_driver(url_or_path: URLOrPathType, provider: str = None) -> Driver:
         _DRIVER_CACHE[cache_key] = DriverClass(url_or_path)
 
     return _DRIVER_CACHE[cache_key]
-
-@dataclasses.dataclass
-class AuxInfo:
-    filepath: str
-    created_at: datetime.datetime
 

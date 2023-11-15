@@ -22,7 +22,7 @@ from pymysql.connections import Connection
 from pymysql.cursors import DictCursor
 
 from terracotta import get_settings, __version__
-from terracotta.drivers import DONT_CARE_VALUE
+from terracotta.drivers import AuxInfo, DONT_CARE_VALUE
 from terracotta.drivers.raster_base import RasterDriver
 from terracotta.drivers.base import requires_connection
 from terracotta import exceptions
@@ -76,12 +76,6 @@ class MySQLCredentials:
             pw = ''
 
         return pw
-
-# Value in the dictionary returned from get_datasets().
-@dataclasses.dataclass
-class AuxInfo:
-    filepath: str
-    created_at: datetime.datetime
 
 class MySQLDriver(RasterDriver):
     """A MySQL-backed raster driver.
