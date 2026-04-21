@@ -4,7 +4,7 @@ Utilities to create and manipulate images.
 """
 
 from typing import Sequence, Tuple, TypeVar, Union
-from typing.io import BinaryIO
+from typing import BinaryIO
 
 from io import BytesIO
 
