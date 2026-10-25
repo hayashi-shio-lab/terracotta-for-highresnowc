@@ -29,7 +29,10 @@ def get_png_stream(image):
     elif image.dtype == 'uint16':
         mode = 'LA'
     assert mode is not None, f'{image.dtype} is not supported.'
-    img = Image.fromarray(image, mode=mode)
+    # img = Image.fromarray(image, mode=mode)
+    img = Image.fromarray(image)
+    if mode and img.mode != mode:
+        img = img.convert(mode)
     sio = BytesIO()
     settings = get_settings()
     img.save(sio, 'png', compress_level=settings.PNG_COMPRESS_LEVEL)
