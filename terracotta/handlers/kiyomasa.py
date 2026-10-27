@@ -25,14 +25,14 @@ RGBA = Tuple[Number, Number, Number, Number]
 
 def get_png_stream(image):
     if image.dtype == 'uint8':
-        mode = 'L'
+        img = Image.fromarray(image, 'L')
     elif image.dtype == 'uint16':
-        mode = 'LA'
-    assert mode is not None, f'{image.dtype} is not supported.'
-    # img = Image.fromarray(image, mode=mode)
-    img = Image.fromarray(image)
-    if mode and img.mode != mode:
-        img = img.convert(mode)
+        arr = image.data
+        # Pack 16bit number as a gray scale PNG with alpha.
+        la = np.stack([arr & 0xFF, arr >> 8], axis=-1).astype(np.uint8)
+        img = Image.fromarray(la, mode='LA')
+    else:
+        assert False, "'dtype' must be uint8 or uint16"
     sio = BytesIO()
     settings = get_settings()
     img.save(sio, 'png', compress_level=settings.PNG_COMPRESS_LEVEL)
