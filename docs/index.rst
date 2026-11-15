@@ -15,11 +15,15 @@ Use cases
    from S3 buckets. <tutorials/aws>` This allows you to build apps that
    scale almost infinitely with minimal maintenance!
 
+Demo
+----
+Try out a live demo `here <https://terracotta-demo-frontend.orangebeach-11aa4896.westeurope.azurecontainerapps.io/>`_.
+
 
 Installation
 ------------
 
-If you are using Linux and already have Python 3.6+ installed, all you need to
+If you are using Linux and already have Python 3.10+ installed, all you need to
 do to check out Terracotta is
 
 .. code-block:: bash
@@ -56,7 +60,7 @@ respectively. This is the best way to find out which API *your*
 deployment of Terracotta uses.
 
 To catch a first glance,
-`feel free to explore the API of our demo server <https://2truhxo59g.execute-api.eu-central-1.amazonaws.com/production/apidoc>`__.
+:doc:`feel free to explore the API of this Terracotta version <apidoc>`.
 
 
 Contents
@@ -70,6 +74,7 @@ Contents
    settings
    cli
    api
+   apidoc
    tutorial
    reference
    issues

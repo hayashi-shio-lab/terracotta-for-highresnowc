@@ -16,42 +16,71 @@ class DatasetOptionSchema(Schema):
         unknown = INCLUDE
 
     # placeholder values to document keys
-    key1 = fields.String(example='value1', description='Value of key1', dump_only=True)
-    key2 = fields.String(example='value2', description='Value of key2', dump_only=True)
+    key1 = fields.String(
+        metadata={"description": "Value of key1", "example": "value1"},
+        dump_only=True,
+    )
+    key2 = fields.String(
+        metadata={"description": "Value of key2", "example": "value2"},
+        dump_only=True,
+    )
 
     # real options
     limit = fields.Integer(
-        description='Maximum number of returned datasets per page', missing=100,
-        validate=validate.Range(min=0)
+        metadata={"description": "Maximum number of returned datasets per page"},
+        load_default=100,
+        validate=validate.Range(min=0),
     )
     page = fields.Integer(
-        missing=0, description='Current dataset page', validate=validate.Range(min=0)
+        metadata={"description": "Current dataset page"},
+        load_default=0,
+        validate=validate.Range(min=0),
+    )
+    order_by = fields.String(
+        metadata={
+            "description": "Comma-separated list of keys to order datasets by",
+            "example": "[key1,key2]",
+        },
+        load_default=None,
+    )
+    ascending = fields.Boolean(
+        metadata={
+            "description": "Sort order of returned datasets",
+        },
+        load_default=True,
     )
 
     @post_load
-    def list_items(self, data: Dict[str, Any], **kwargs: Any) -> Dict[str, Union[str, List[str]]]:
+    def list_items(
+        self, data: Dict[str, Any], **kwargs: Any
+    ) -> Dict[str, Union[str, List[str]]]:
         # Create lists of values supplied as stringified lists
         for key, value in data.items():
-            if isinstance(value, str) and re.match(r'^\[.*\]$', value):
-                data[key] = value[1:-1].split(',')
+            if isinstance(value, str) and re.match(r"^\[.*\]$", value):
+                data[key] = value[1:-1].split(",")
         return data
 
 
 class DatasetSchema(Schema):
-    class Meta:
-        ordered = True
-
-    page = fields.Integer(description='Current page', required=True)
-    limit = fields.Integer(description='Maximum number of returned items', required=True)
-    datasets = fields.List(
-        fields.Dict(values=fields.String(example='value1'),
-                    keys=fields.String(example='key1')),
+    page = fields.Integer(
+        metadata={"description": "Current page"},
         required=True,
-        description='Array containing all available key combinations'
+    )
+    limit = fields.Integer(
+        metadata={"description": "Maximum number of returned items"},
+        required=True,
+    )
+    datasets = fields.List(
+        fields.Dict(
+            values=fields.String(metadata={"example": "value1"}),
+            keys=fields.String(metadata={"example": "key1"}),
+        ),
+        required=True,
+        metadata={"description": "Array containing all available key combinations"},
     )
 
 
-@METADATA_API.route('/datasets', methods=['GET'])
+@METADATA_API.route("/datasets", methods=["GET"])
 def get_datasets() -> Response:
     """Get all available key combinations
     ---
@@ -74,17 +103,22 @@ def get_datasets() -> Response:
                 description: Query parameters contain unrecognized keys
     """
     from terracotta.handlers.datasets import datasets
+
     option_schema = DatasetOptionSchema()
     options = option_schema.load(request.args)
 
-    limit = options.pop('limit')
-    page = options.pop('page')
+    limit = options.pop("limit")
+    page = options.pop("page")
     keys = options or None
+    order_by = options.pop("order_by")
+    ascending = options.pop("ascending")
 
     payload = {
-        'limit': limit,
-        'page': page,
-        'datasets': datasets(keys, page=page, limit=limit)
+        "limit": limit,
+        "page": page,
+        "datasets": datasets(
+            keys, page=page, limit=limit, order_by=order_by, ascending=ascending
+        ),
     }
 
     schema = DatasetSchema()

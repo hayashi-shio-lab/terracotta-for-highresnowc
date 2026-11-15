@@ -1,22 +1,24 @@
-[![Build Status](https://travis-ci.com/DHI-GRAS/terracotta.svg?token=27HwdYKjJ1yP6smyEa25&branch=main)](https://travis-ci.org/DHI-GRAS/terracotta)
+[![Tests](https://github.com/DHI/terracotta/actions/workflows/test.yml/badge.svg)](https://github.com/DHI/terracotta/actions/workflows/test.yml)
 [![Documentation Status](https://readthedocs.org/projects/terracotta-python/badge/?version=latest)](https://terracotta-python.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/DHI-GRAS/terracotta/branch/main/graph/badge.svg?token=u16QBwwvvn)](https://codecov.io/gh/DHI-GRAS/terracotta)
-[![GitHub release](https://img.shields.io/github/release-pre/dhi-gras/terracotta.svg)](https://github.com/DHI-GRAS/terracotta/releases)
+[![GitHub release](https://img.shields.io/github/release-pre/dhi-gras/terracotta.svg)](https://github.com/DHI/terracotta/releases)
 [![PyPI release](https://img.shields.io/pypi/v/terracotta.svg)](https://pypi.org/project/terracotta)
-[![License](https://img.shields.io/github/license/dhi-gras/terracotta.svg)](https://github.com/DHI-GRAS/terracotta/blob/main/LICENSE)
+[![License](https://img.shields.io/github/license/dhi-gras/terracotta.svg)](https://github.com/DHI/terracotta/blob/main/LICENSE)
 [![Python versions](https://img.shields.io/pypi/pyversions/terracotta.svg)](https://pypi.org/project/terracotta)
 
 [![Logo](docs/_figures/logo-banner.svg)](#)
 
 Terracotta is a pure Python tile server that runs as a WSGI app on a
 dedicated webserver or as a serverless app on AWS Lambda. It is built on a
-modern Python 3.6 stack, powered by awesome open-source software such as
+modern Python stack, powered by awesome open-source software such as
 [Flask](http://flask.pocoo.org), [Zappa](https://github.com/Miserlou/Zappa),
 and [Rasterio](https://github.com/mapbox/rasterio).
 
 [Read the docs](https://terracotta-python.readthedocs.io/en/latest) |
-[Explore the API](https://2truhxo59g.execute-api.eu-central-1.amazonaws.com/production/apidoc) |
-[Satlas, powered by Terracotta](http://satlas.dk)
+[Try the demo](https://terracotta-demo-frontend.orangebeach-11aa4896.westeurope.azurecontainerapps.io/) |
+[Explore the API](https://terracotta-python.readthedocs.io/en/latest/apidoc.html) |
+[Satlas, powered by Terracotta](http://satlas.dk) |
+[Docker Image](https://hub.docker.com/r/dhigras/terracotta/tags)
 
 ## Why Terracotta?
 
@@ -103,8 +105,8 @@ Then open the client page (http://127.0.0.1:5100/ in this case) in your browser.
 
 ## Development
 
-We gladly accept [bug reports](https://github.com/DHI-GRAS/terracotta/issues)
-and [pull requests](https://github.com/DHI-GRAS/terracotta/pulls) via GitHub.
+We gladly accept [bug reports](https://github.com/DHI/terracotta/issues)
+and [pull requests](https://github.com/DHI/terracotta/pulls) via GitHub.
 For your code to be useful, make sure that it is covered by tests and that
 it satisfies our linting practices (via `mypy` and `flake8`).
 

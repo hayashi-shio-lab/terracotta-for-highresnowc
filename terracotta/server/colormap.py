@@ -14,8 +14,8 @@ from terracotta.cmaps import AVAILABLE_CMAPS
 
 
 class ColormapEntrySchema(Schema):
-    value = fields.Number(required=True)
-    rgba = fields.List(fields.Number(), required=True, validate=validate.Length(equal=4))
+    value = fields.Float(required=True)
+    rgba = fields.List(fields.Float(), required=True, validate=validate.Length(equal=4))
 
 
 class ColormapSchema(Schema):
@@ -27,31 +27,46 @@ class ColormapOptionSchema(Schema):
         unknown = EXCLUDE
 
     stretch_range = fields.List(
-        fields.Number(), validate=validate.Length(equal=2), required=True,
-        description='Minimum and maximum value of colormap as JSON array '
-                    '(same as for /singleband and /rgb)'
+        fields.Float(),
+        validate=validate.Length(equal=2),
+        required=True,
+        metadata={
+            "description": (
+                "Minimum and maximum value of colormap as JSON array "
+                "(same as for /singleband and /rgb)",
+            ),
+        },
     )
     colormap = fields.String(
-        description='Name of color map to use (for a preview see '
-                    'https://terracotta-python.readthedocs.io/en/latest/reference/colormaps.html)',
-        missing=None, validate=validate.OneOf(AVAILABLE_CMAPS)
+        metadata={
+            "description": (
+                "Name of color map to use (for a preview see "
+                "https://terracotta-python.readthedocs.io/en/latest/reference/colormaps.html)",
+            ),
+        },
+        load_default=None,
+        validate=validate.OneOf(AVAILABLE_CMAPS),
     )
-    num_values = fields.Int(description='Number of values to return', missing=255)
+    num_values = fields.Int(
+        metadata={"description": "Number of values to return"}, load_default=255
+    )
 
     @pre_load
     def process_ranges(self, data: Mapping[str, Any], **kwargs: Any) -> Dict[str, Any]:
         data = dict(data.items())
-        var = 'stretch_range'
+        var = "stretch_range"
         val = data.get(var)
         if val:
             try:
                 data[var] = json.loads(val)
             except json.decoder.JSONDecodeError as exc:
-                raise ValidationError(f'Could not decode value for {var} as JSON') from exc
+                raise ValidationError(
+                    f"Could not decode value for {var} as JSON"
+                ) from exc
         return data
 
 
-@METADATA_API.route('/colormap', methods=['GET'])
+@METADATA_API.route("/colormap", methods=["GET"])
 def get_colormap() -> Response:
     """Get a colormap mapping pixel values to colors
     ---
@@ -75,7 +90,7 @@ def get_colormap() -> Response:
     input_schema = ColormapOptionSchema()
     options = input_schema.load(request.args)
 
-    payload = {'colormap': colormap(**options)}
+    payload = {"colormap": colormap(**options)}
 
     schema = ColormapSchema()
     return jsonify(schema.load(payload))

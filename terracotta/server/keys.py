@@ -10,18 +10,15 @@ from terracotta.server.flask_api import METADATA_API
 
 
 class KeyItemSchema(Schema):
-    class Meta:
-        ordered = True
-
-    key = fields.String(description='Key name', required=True)
-    description = fields.String(description='Key description')
+    key = fields.String(metadata={"description": "Key name"}, required=True)
+    description = fields.String(metadata={"description": "Key description"})
 
 
 class KeySchema(Schema):
     keys = fields.Nested(KeyItemSchema, many=True, required=True)
 
 
-@METADATA_API.route('/keys', methods=['GET'])
+@METADATA_API.route("/keys", methods=["GET"])
 def get_keys() -> Response:
     """Get all key names
     ---
@@ -34,6 +31,7 @@ def get_keys() -> Response:
                 schema: KeySchema
     """
     from terracotta.handlers.keys import keys
+
     schema = KeySchema()
-    payload = {'keys': keys()}
+    payload = {"keys": keys()}
     return jsonify(schema.load(payload))
