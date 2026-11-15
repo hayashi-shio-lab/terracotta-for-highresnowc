@@ -16,20 +16,14 @@ from terracotta.drivers.geotiff_raster_store import GeoTiffRasterStore
 
 URLOrPathType = Union[str, Path]
 
-class DONT_CARE:
-    def __str__(self):
-        return 'DONT_CARE'
-    def __repr__(self):
-        return 'DONT_CARE'
-
-DONT_CARE_VALUE = DONT_CARE()
-
-# Value in the dictionary returned from get_datasets().
+# Values in the dictionary returned from get_datasets().
 @dataclasses.dataclass
 class AuxInfo:
     filepath: str
     created_at: datetime.datetime
 
+    def __hash__(self):
+        return hash((self.filepath, str(self.created_at.timestamp())))
 
 def load_driver(provider: str) -> Type[MetaStore]:
     if provider == "sqlite-remote":

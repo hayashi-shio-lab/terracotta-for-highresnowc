@@ -193,7 +193,7 @@ class TerracottaDriver:
                 if not dataset:
                     raise exceptions.DatasetNotFoundError("No dataset found")
 
-                path = squeeze(dataset.values())
+                path = squeeze(dataset.values()).filepath
                 metadata = self.compute_metadata(
                     path, max_shape=self.LAZY_LOADING_MAX_SHAPE
                 )
@@ -286,7 +286,7 @@ class TerracottaDriver:
             the result.
 
         """
-        path = squeeze(self.get_datasets(keys).values())
+        path = squeeze(self.get_datasets(keys).values()).filepath
 
         return self.raster_store.get_raster_tile(
             path=path,

@@ -25,6 +25,7 @@ from terracotta.drivers.base_classes import (
     requires_writable,
 )
 from terracotta.profile import trace
+from terracotta.drivers import AuxInfo
 
 _ERROR_ON_CONNECT = (
     "Could not connect to database. Make sure that the given path points "
@@ -374,7 +375,8 @@ class RelationalMetaStore(MetaStore, ABC):
         def keytuple(row: sqla.engine.row.Row) -> Tuple[str, ...]:
             return tuple(getattr(row, key) for key in self.key_names)
 
-        datasets = {keytuple(row): row.path for row in result}
+        datasets = {keytuple(row): AuxInfo(row.path, row.created_at)
+                    for row in result}
         return datasets
 
     @trace("get_metadata")
