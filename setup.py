@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages, find_packages
 from os import path
 import re
 
@@ -31,10 +31,10 @@ setup(
     author="Dion Häfner",
     author_email="mail@dionhaefner.de",
     keywords="xyz tileserver rasterio cloud-optimized-geotiff serverless",
+    license="MIT",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: End Users/Desktop",
-        "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
@@ -110,12 +110,13 @@ setup(
         terracotta=terracotta.scripts.cli:entrypoint
     """,
     # package data
-    include_package_data=True,
+    include_package_data=False,
     package_data={
         "terracotta": [
             "cmaps/data/*_rgba.npy",  # colormaps
             "templates/*.html",
             "static/*",  # preview app
+            "client/static/**/*",
         ]
     },
 )
