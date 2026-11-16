@@ -25,7 +25,7 @@ from terracotta.drivers.base_classes import (
     requires_writable,
 )
 from terracotta.profile import trace
-from terracotta.drivers import AuxInfo
+from terracotta.drivers import AuxInfo, DONT_CARE_VALUE
 
 _ERROR_ON_CONNECT = (
     "Could not connect to database. Make sure that the given path points "
@@ -333,6 +333,7 @@ class RelationalMetaStore(MetaStore, ABC):
         where = {
             key: value if isinstance(value, list) else [value]
             for key, value in where.items()
+            if value != DONT_CARE_VALUE
         }
 
         datasets_table = sqla.Table(
@@ -454,6 +455,7 @@ class RelationalMetaStore(MetaStore, ABC):
                     *[
                         datasets_table.c[column] == value
                         for column, value in keys.items()
+                        if value != DONT_CARE_VALUE
                     ]
                 )
             )
@@ -462,6 +464,7 @@ class RelationalMetaStore(MetaStore, ABC):
                     *[
                         metadata_table.c[column] == value
                         for column, value in keys.items()
+                        if value != DONT_CARE_VALUE
                     ]
                 )
             )
